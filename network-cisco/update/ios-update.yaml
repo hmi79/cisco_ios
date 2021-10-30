@@ -11,7 +11,7 @@
         ios_binary: "c2960cx-universalk9-mz.152-7.E4.bin"
         ios_md5: "a869db8d8c6f7e1c608c0d710f7e3314"
         ios_size_kb: 30000
-    server: "172.30.0.101"
+    server: "172.20.0.12"
     protocol: "ftp"
 
   vars_prompt:
