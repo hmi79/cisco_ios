@@ -1,0 +1,22 @@
+---
+- name: IPv6
+  hosts: switch
+  gather_facts: false
+  
+  vars:
+  tasks:
+  - name: Find IPv4
+    #    shell: dig "{{ ( inventory_hostname ) }}" +short
+    shell: cat /etc/hosts | grep "{{ inventory_hostname }}" | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'
+    register: x
+
+  - name: Set IPv6
+    vars: 
+      xx: "{{ (x.stdout_lines) | replace('192.168.141.','fc00:141::') }}/64"
+      xy: "{{ (xx) | replace(\"'\",'') | replace(']','') | replace('[','') }}"
+    ios_config:
+      lines:
+        - "no ipv6 add "
+        - "ipv6 address {{ xy }}"
+        - "no sh"
+      before: int vl 141

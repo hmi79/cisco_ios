@@ -1,0 +1,138 @@
+---
+- hosts: switch
+  gather_facts: false
+  connection: local
+
+  vars:
+    models:
+      "WS-C2960CX-8TC-L":
+        ios_version: "15.2(7)E4"
+        ios_path: "/"
+        ios_binary: "c2960cx-universalk9-mz.152-7.E4.bin"
+        ios_md5: "a869db8d8c6f7e1c608c0d710f7e3314"
+        ios_size_kb: 30000
+    server: "172.30.0.101"
+    protocol: "ftp"
+
+  vars_prompt:
+    - name: reload_time
+      prompt: If you want to reload the device enter time (hh:mm) or not, press enter 
+      private: no
+
+  tasks:
+    - name: Gather all legacy facts
+      ios_facts:
+        gather_subset: hardware
+      tags:
+        - facts
+
+    - name: Check Boot path
+      ios_command:
+        commands: 'show boot | i BOOT'
+      register: bootvar
+      when:
+        - models[ansible_net_model] is defined
+      tags:
+        - bootvar
+
+    - name: Upgarde when non-compliant
+      block:
+        - name: Check if IOS is already present on the flash
+          ios_command:
+            commands: 'show flash: | include {{ models[ansible_net_model]["ios_binary"] }}'
+          register: dir_flash
+          tags:
+            - flash
+
+        - name: Asset that there is enough flash space for upload
+          assert:
+            that:
+              - ansible_net_filesystems_info['flash:']['spacefree_kb'] > models[ansible_net_model]["ios_size_kb"]
+            msg: "There is not enough space left on the device's flash"
+          when:
+            - models[ansible_net_model]["ios_binary"] not in dir_flash.stdout[0]
+          tags:
+            - flash
+
+        - name: Start Copy from Server
+          ios_command:
+            commands: 
+              - command: copy {{ protocol }}://{{ server }}/{{ models[ansible_net_model]["ios_path"] }}{{ models[ansible_net_model]["ios_binary"] }} flash:/
+                prompt: 'Destination filename \[{{ models[ansible_net_model]["ios_binary"] }}\]?'
+                answer: "\r"
+          when: 
+            - ansible_net_filesystems_info['flash:']['spacefree_kb'] > models[ansible_net_model]["ios_size_kb"] 
+            - ansible_net_model != models[ansible_net_model]["ios_version"]
+            - models[ansible_net_model]["ios_binary"] not in dir_flash.stdout[0]
+          vars:
+              ansible_command_timeout: 1800
+          tags:
+            - upload
+
+        - name: Check if IOS is already present on the flash
+          ios_command:
+            commands: 'show flash: | include {{ models[ansible_net_model]["ios_binary"] }}'
+          register: dir_flash
+          tags:
+            - flash
+
+        - name: Asset that IOS is present
+          assert:
+            that:
+              - models[ansible_net_model]["ios_binary"] in dir_flash.stdout[0]
+          tags:
+            - flash
+
+        - name: Check MD5 Hash
+          ios_command:
+            commands:
+              - command: 'verify /md5 flash:{{ models[ansible_net_model]["ios_binary"] }}'
+          register: md5_result
+          vars:
+            ansible_command_timeout: 300
+          when:
+            - models[ansible_net_model]["ios_binary"] in dir_flash.stdout[0]
+          tags:
+            - md5
+
+        - name: Asset that MD5Sums are identical
+          assert:
+            that:
+              - models[ansible_net_model]["ios_md5"] in md5_result.stdout[0]
+            msg: "IOS File on device MD5Sum is not correct"
+          tags:
+            - md5
+
+        - name: Changing the boot image to the new version
+          ios_config:
+            lines:
+              - "boot system flash:/c2960cx-universalk9-mz.152-7.E4.bin"
+              - "do write"
+      when: 
+        - models[ansible_net_model] is defined
+        - ansible_net_version != models[ansible_net_model]["ios_version"]
+        - models[ansible_net_model]["ios_binary"] not in bootvar.stdout[0]
+
+    - name: Check Boot path
+      ios_command:
+        commands: 'show boot | i BOOT'
+      register: bootvar
+      when:
+        - models[ansible_net_model] is defined
+        - models[ansible_net_model]["ios_binary"] not in bootvar.stdout[0]
+      tags:
+        - bootvar
+
+    - name: Reload
+      cli_command:
+        command: "reload at {{ reload_time }}"
+        prompt:
+          - confirm
+        answer:
+          - 'yes'
+      when:
+        - models[ansible_net_model] is defined
+          #        - models[ansible_net_model]["reload_prompt"] | bool
+        - reload_time != ''
+        - ansible_net_version != models[ansible_net_model]["ios_version"]
+

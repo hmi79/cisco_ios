@@ -1,0 +1,9 @@
+---
+- name: DNS
+  hosts: switch
+  gather_facts: yes
+  tasks:
+  - name: dns
+    lineinfile:
+        dest: "/root/hosts.json"
+        line: "{{ ( ansible_net_all_ipv4_addresses ) | replace('[','') | replace(',','') | replace(']','') }}  {{ ansible_net_hostname }}.example.local"

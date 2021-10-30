@@ -1,0 +1,10 @@
+- hosts: switch
+  gather_facts: true
+
+  tasks:
+    - name: check ios ver
+      debug:
+        msg: "{{ ansible_net_version }}"
+      when: 
+        - ansible_net_model == "WS-C2960X-48LPS-L"
+          #        - ansible_net_version == "15.2(7)E4"

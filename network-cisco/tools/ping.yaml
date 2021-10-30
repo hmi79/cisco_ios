@@ -1,0 +1,10 @@
+---
+
+- hosts: switch
+  gather_facts: False
+  connection: local
+
+  tasks:
+    - name: 'check if Controller is online'
+      shell: ping -c 1 -w "{{ ansible_host }}"
+      register: ping_result

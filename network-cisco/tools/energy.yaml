@@ -1,0 +1,19 @@
+---
+
+- name: Shutdown Unused Trunk Ports
+  connection: network_cli
+  hosts: switch
+  gather_facts: false
+  vars:
+
+
+
+  tasks:
+    - name: test
+      ios_facts:
+        gather_subset:
+        - 'min'
+        gather_network_resources:
+        - l2_interfaces
+
+

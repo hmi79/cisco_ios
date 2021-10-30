@@ -1,0 +1,11 @@
+- name: des FIX
+  hosts: switch
+  vars:
+  tasks:
+    - name: Set Interface Description
+      ios_config:
+        lines:
+          - description ++ to {{ item.value[0].host }} via its {{ item.value[0].port }} ++
+        parents: interface {{ item.key }}
+        save_when: changed
+      with_dict: "{{ansible_facts.net_neighbors }}"

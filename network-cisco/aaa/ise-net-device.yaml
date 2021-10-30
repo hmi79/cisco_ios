@@ -1,0 +1,47 @@
+---
+- name: Add Network Device ISE
+  hosts: switch
+  gather_facts: false
+
+  vars:
+    tacacs_secret: "SECRET"
+    rad_sec: "SECRET"
+  vars_prompt:
+    - name: ise_user
+      prompt: Enter ISE Username
+      private: no
+
+    - name: ise_password
+      prompt: Enter ISE Password
+      private: yes
+
+    - name: dev_type
+      prompt: Enter Device Type
+      private: no
+
+    - name: location
+      prompt: Enter Device location
+      private: no
+  tasks:
+  - name: Find IPv4
+    #    shell: 'dig "{{ inventory_hostname }}" +short @192.168.200.60'
+    shell: cat /etc/hosts | grep "{{ inventory_hostname }}" | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'
+    register: x
+
+  - name: TEST
+    debug:
+      msg: "{{ x.stdout }}"
+  - name: Provision new device with Cisco ISE for TACACS and RADIUS access
+    uri:
+      url: https://172.20.0.10:9060/ers/config/networkdevice
+      user: "{{ ise_user }}"
+      password: "{{ ise_password }}"
+      headers:
+        Accept: application/json
+        content-type: application/json
+        ers-media-type: network.networkdevice.1.1
+      status_code: 201
+      method: POST
+      body_format: json
+      body: '{"NetworkDevice":{"name": "{{ inventory_hostname }}","description":"IOS","authenticationSettings":{"radiusSharedSecret":"{{ rad_sec }}"},"tacacsSettings":{"sharedSecret":"{{ tacacs_secret }}","connectModeOptions":"ON_DRAFT_COMPLIANT"},"NetworkDeviceIPList":[{"ipaddress": "{{ x.stdout }}","mask":32}],"NetworkDeviceGroupList":["Location#All Locations#{{ location }}","Device Type#All Device Types#{{ dev_type }}"]}}'
+      validate_certs: no

@@ -1,0 +1,24 @@
+---
+- name: SSH Key
+  hosts: switch
+  gather_facts: false
+  
+  vars:
+    keyhash: "XXXXX"
+  tasks:
+
+  - name: Add Ansible SSH-RSA Key
+    ios_config:
+      lines:
+        -  "key-hash ssh-rsa {{ keyhash }}"
+      parents: username ansible
+      before: ip ssh pubkey-chain
+
+  - name: Add Admin SSH-RSA Key
+    ios_config:
+      lines:
+        -  "key-hash ssh-rsa {{ keyhash }}"
+      parents: username admin
+      before: ip ssh pubkey-chain
+# ip ssh server algorithm authentication publickey
+# ip ssh server algorithm authentication password

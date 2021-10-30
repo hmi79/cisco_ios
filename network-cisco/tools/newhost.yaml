@@ -1,0 +1,14 @@
+---
+- name: Add host to group
+  hosts: switch
+  gather_facts: false
+
+  vars:
+  vars_prompt:
+    - name: hostname
+      prompt: Enter HostName
+      private: no
+  tasks:
+  - name: Add host to group
+    add_host: "{{ hostname }}+'.example.local'"
+        groups: switch
