@@ -3,9 +3,9 @@
 interface {{ Interface['IntName'] }}
   no shutdown
   {% if Interface['IntTrunk'] -%}
-  desc test21
+  description trunk-test21
   {% else -%}
-  description access
+  description access-test21
   {% endif -%}
 !
 {% endfor -%}
