@@ -1,0 +1,38 @@
+---
+- name: IP SG
+  hosts: switch
+  gather_facts: false
+  #vars_files:
+  #- "{{ inventory_hostname }}.data.yaml"
+  vars:
+  pre_tasks:
+    - name: Prepare jinja2 Data
+      shell: "hostname={{ inventory_hostname }}.data.yaml.0 hostname2={{ inventory_hostname }}.data.yaml bash b2.sh"
+
+    - name: run show running-config
+      ios_command:
+        commands: show running-config | sec interface
+      register: config
+      tags:
+        - test
+
+    - name: copy file
+      copy:
+        content: "{{ config.stdout[0] }}"
+        dest: "{{ inventory_hostname }}.data.yaml.0"
+      tags:
+        - test
+
+    - name: Create jinja2 Data
+      shell: "hostname={{ inventory_hostname }}.data.yaml.0 hostname2={{ inventory_hostname }}.data.yaml bash b.sh"
+      tags:
+        - test
+
+  tasks:
+    - include_vars: "{{ inventory_hostname }}.data.yaml"
+    - name: Push Configuration
+      ios_config:
+        src: template.j2
+
+    - name: Clean jinja2 Data
+      shell: "hostname={{ inventory_hostname }}.data.yaml.0 hostname2={{ inventory_hostname }}.data.yaml bash b2.sh"
