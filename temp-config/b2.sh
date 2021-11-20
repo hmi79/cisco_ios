@@ -1,3 +1,3 @@
-cat /dev/null > $hostname
-cat /dev/null > $hostname2
-echo -e "---\nSwInterfaces:"> $hostname2
+cat /dev/null > $invname
+cat /dev/null > $invname2
+echo -e "---\nSwInterfaces:"> $invname2

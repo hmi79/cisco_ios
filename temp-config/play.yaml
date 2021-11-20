@@ -7,7 +7,7 @@
   vars:
   pre_tasks:
     - name: Prepare jinja2 Data
-      shell: "hostname={{ inventory_hostname }}.data.yaml.0 hostname2={{ inventory_hostname }}.data.yaml bash b2.sh"
+      shell: "invname={{ inventory_hostname }}.data.yaml.0 invname2={{ inventory_hostname }}.data.yaml bash b2.sh"
 
     - name: run show running-config
       ios_command:
@@ -24,7 +24,7 @@
         - test
 
     - name: Create jinja2 Data
-      shell: "hostname={{ inventory_hostname }}.data.yaml.0 hostname2={{ inventory_hostname }}.data.yaml bash b.sh"
+      shell: "invname={{ inventory_hostname }}.data.yaml.0 invname2={{ inventory_hostname }}.data.yaml bash b.sh"
       tags:
         - test
 
@@ -35,4 +35,4 @@
         src: template.j2
 
     - name: Clean jinja2 Data
-      shell: "hostname={{ inventory_hostname }}.data.yaml.0 hostname2={{ inventory_hostname }}.data.yaml bash b2.sh"
+      shell: "invname={{ inventory_hostname }}.data.yaml.0 invname2={{ inventory_hostname }}.data.yaml bash b2.sh"

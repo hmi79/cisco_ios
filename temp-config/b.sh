@@ -1,9 +1,9 @@
 #/bin/bash
-cat $hostname | grep -E 'interface|mode trunk|mode access' | tee $hostname
-sed -i "s/interface/  - IntName:/g" $hostname
-sed -i "s/ switchport mode access/    IntTrunk: false/g" $hostname
-sed -i "s/ switchport mode trunk/    IntTrunk: true/g" $hostname
-sed -i '/Vlan/d' $hostname
-cat $hostname | grep -B 1 'IntTrunk' | tee $hostname2
-sed -i '1iSwInterfaces:' $hostname2
-sed -i '1i---' $hostname2
+cat $invname | grep -E 'interface|mode trunk|mode access' | tee $invname
+sed -i "s/interface/  - IntName:/g" $invname
+sed -i "s/ switchport mode access/    IntTrunk: false/g" $invname
+sed -i "s/ switchport mode trunk/    IntTrunk: true/g" $invname
+sed -i '/Vlan/d' $invname
+cat $invname | grep -B 1 'IntTrunk' | tee $invname2
+sed -i '1iSwInterfaces:' $invname2
+sed -i '1i---' $invname2
