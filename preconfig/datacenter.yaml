@@ -1,6 +1,6 @@
 ---
 - name: preconfig
-  hosts: edge
+  hosts: datacenter
   gather_facts: false
 
   vars:
