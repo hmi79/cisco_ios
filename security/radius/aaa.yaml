@@ -34,12 +34,12 @@
     - name: Prepare jinja2 Data
       shell: "hostname={{ path_dir }}/{{ inventory_hostname }}.data.yaml.0 hostname1={{ path_dir }}/{{ inventory_hostname }}.data.yaml.1 hostname2={{ path_dir }}/{{ inventory_hostname }}.data.yaml bash {{ path_dir }}/b2.sh"
 
-    - name: run show running-config
+    - name: Show running-config
       ios_command:
         commands: show running-config | sec interface
       register: config
 
-    - name: copy file
+    - name: Save Config
       copy:
         content: "{{ config.stdout[0] }}"
         dest: "{{ path_dir }}/{{ inventory_hostname }}.data.yaml.0"
@@ -53,6 +53,6 @@
       ios_config:
         src: template.j2
 
-    - name: Delete Tmep jinja2 Data
+    - name: Delete jinja2 Data
       shell: "hostname={{ path_dir }}/{{ inventory_hostname }}.data.yaml.0 hostname1={{ path_dir }}/{{ inventory_hostname }}.data.yaml.1 hostname2={{ path_dir }}/{{ inventory_hostname }}.data.yaml bash {{ path_dir }}/b3.sh"
       
