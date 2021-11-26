@@ -1,0 +1,23 @@
+all:
+  vars:
+    ansible_ssh_user: admin
+    ansible_ssh_pass: "xxxx"
+    ansible_network_os: ios
+    ansible_connection: network_cli
+
+  children:
+    local:
+      hosts:
+        ansible:
+    switch:    
+      children:
+        datacenter:
+          hosts:
+            sw-dc01:
+            sw-dc02:
+            sw-dc03:
+        edge:
+          hosts:
+          sw-edge01:
+          sw-edge02:
+          sw-edge03:

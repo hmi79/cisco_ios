@@ -1,0 +1,46 @@
+---
+- name: preconfig
+  hosts: edge
+  gather_facts: false
+
+  vars:
+    hostname: "{{ ( inventory_hostname ) | replace('.example.local','') }}"
+
+  tasks:
+    - name: hostname
+      ios_config:
+        lines: hostname {{ hostname }}
+
+    - name: Password-Encryption
+      ios_config:
+        lines: service password-encryption
+
+    - name: clock
+      ios_config:
+        lines:
+          - "clock timezone ilam 3 30"
+          - "no clock summer-time TEH recurring"
+          - "ntp server 172.20.11.1"
+      tags:
+        - clock
+    - name: network
+      ios_config:
+        lines:
+          - "ip default-gateway 172.20.11.1"
+          - "ip name-server 1.1.1.1 1.0.0.1"
+          - "no ip http server"
+          #- "ipv6 route ::/0 fc00:172:20:11::1"
+          - "no ip domain-lookup"
+          
+    - name: Add Admin SSH-RSA Key
+      ios_config:
+        lines:
+          -  "key-hash ssh-rsa {{ key_hash }}"
+        parents: username admin
+        before: ip ssh pubkey-chain
+
+    - name: Create VLAN X
+      ios_vlans:
+        config:
+          - name: Vlan X
+            vlan_id: 10
