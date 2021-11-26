@@ -1,7 +1,9 @@
 ---
-- name: INV
+- name: Gather Information
   hosts: switch
 
+  vars:
+    path_dir: "/root/ansible/cisco_ios/gather-info/facts/"
   tasks:
 
 # Gather Ansible Facts About Distribution #
@@ -20,26 +22,26 @@
       copy: 
         content: | 
           {{ ansible_facts }}
-        dest: /root/inv-fact/{{ inventory_hostname }}_IOS_Facts_RAW.json
+        dest: "{{ path_dir }}/{{ inventory_hostname }}_IOS_Facts_RAW.json"
 
 # Create JSON file with Ansible Facts #
     - name: Create raw JSON file
       copy: 
         content: | 
           {{ ansible_facts | to_nice_json }}
-        dest: /root/inv-fact/{{ inventory_hostname }}_IOS_Facts_Nice.json
+        dest: "{{ path_dir }}/{{ inventory_hostname }}_IOS_Facts_Nice.json"
 
 # Create YAML file with Ansible Facts #
     - name: Create raw YAML
       copy: 
         content: | 
           {{ ansible_facts | to_nice_yaml }}
-        dest: /root/inv-fact/{{ inventory_hostname }}_IOS_Facts.yml
+        dest: "{{ path_dir }}/{{ inventory_hostname }}_IOS_Facts.yml"
 
 # Add Headers to YAML #
     - name: Header Row
       lineinfile:
-        path: /root/inv-fact/{{ inventory_hostname }}_IOS_Facts.yml
+        path: "{{ path_dir }}/{{ inventory_hostname }}_IOS_Facts.yml"
         insertbefore: BOF
         line: ---        
       delegate_to: localhost
@@ -61,26 +63,26 @@
       copy: 
         content: | 
           {{ inventory_hostname }},{{ image }},{{ version }},{{ serial }},{{ model }},{{ disk_total }},{{ disk_free }},{{ mem_total }},{{ mem_free }}
-        dest: /root/inv-fact/{{ inventory_hostname }}_IOS_facts.csv       
+        dest: "{{ path_dir }}/{{ inventory_hostname }}_IOS_facts.csv"       
 
-# Format CSV #
+# CSV
     - name: Format CSV File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_IOS_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_IOS_facts.csv"
         regexp: '\[|\]|"'
         replace: ''      
 
-# Format CSV #
+# CSV
     - name: Format CSV File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_IOS_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_IOS_facts.csv"
         regexp: "'"
         replace: ''
 
 # Add Header Row to CSV #
     - name: Header Row
       lineinfile:
-        path: /root/inv-fact/{{ inventory_hostname }}_IOS_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_IOS_facts.csv"
         insertbefore: BOF
         line: Hostname,Image,Version,Serial Number,Model,Total Disk,Free Disk,Total Memory,Free Memory
 
@@ -89,40 +91,40 @@
       copy: 
         content: | 
           | {{ inventory_hostname }} | {{ image }} | {{ version }} | {{ serial }} | {{ model }} | {{ disk_total }} | {{ disk_free }} | {{ mem_total }} | {{ mem_free }} |
-        dest: /root/inv-fact/{{ inventory_hostname }}_IOS_facts.md 
+        dest: "{{ path_dir }}/{{ inventory_hostname }}_IOS_facts.md" 
       
 # Format Markdown #
     - name: Format Markdown File New Lines
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_IOS_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_IOS_facts.md"
         regexp: '],'
         replace: ']\n'
 
 # Format Markdown #
     - name: Format Markdown File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_IOS_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_IOS_facts.md"
         regexp: '\[|\]|"'
         replace: ''      
 
 # Format Markdown #
     - name: Format Markdown File Commas to Pipes
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_IOS_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_IOS_facts.md"
         regexp: ','
         replace: ' | '
         
 # Format Markdown #
     - name: Format Markdown File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_IOS_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_IOS_facts.md"
         regexp: "'"
         replace: ''
 
 # Add Header Rows to Markdown #
     - name: Header Row
       lineinfile:
-        path: /root/inv-fact/{{ inventory_hostname }}_IOS_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_IOS_facts.md"
         insertbefore: BOF
         line: "{{ item.property }}"
       with_items:
@@ -132,7 +134,7 @@
 
 # Create Mind Map # 
     - name: create Distribution Facts Mind Map 
-      shell: "npx markmap-cli /root/inv-fact/{{ inventory_hostname }}_IOS_facts.md"
+      shell: "npx markmap-cli {{ path_dir }}/{{ inventory_hostname }}_IOS_facts.md"
       register: markmap
 
 ## IP ADDRESS FACTS SECTION ##
@@ -141,33 +143,33 @@
       copy: 
         content: | 
           {{ ip_addresses }}
-        dest: /root/inv-fact/{{ inventory_hostname }}_IP_facts.csv       
+        dest: "{{ path_dir }}/{{ inventory_hostname }}_IP_facts.csv"       
 
-# Format CSV #
+# CSV
     - name: Format CSV File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_IP_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_IP_facts.csv"
         regexp: '\[|\]|"'
         replace: ''      
 
-# Format CSV #
+# CSV
     - name: Format CSV File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_IP_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_IP_facts.csv"
         regexp: "'"
         replace: ''
 
-# Format CSV #
+# CSV
     - name: Format CSV File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_IP_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_IP_facts.csv"
         regexp: ','
         replace: '\n'
 
 # Add Header Row to CSV #
     - name: Header Row
       lineinfile:
-        path: /root/inv-fact/{{ inventory_hostname }}_IP_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_IP_facts.csv"
         insertbefore: BOF
         line: IP Addresses
 
@@ -176,40 +178,40 @@
       copy: 
         content: | 
           {{ ip_addresses }}
-        dest: /root/inv-fact/{{ inventory_hostname }}_IP_facts.md 
+        dest: "{{ path_dir }}/{{ inventory_hostname }}_IP_facts.md" 
       
 # Format Markdown #
     - name: Format Markdown File New Lines
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_IP_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_IP_facts.md"
         regexp: ','
         replace: '\n'
 
 # Format Markdown #
     - name: Format Markdown File New Lines
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_IP_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_IP_facts.md"
         regexp: '^'
         replace: '| '
 
 # Format Markdown #
     - name: Format Markdown File New Lines
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_IP_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_IP_facts.md"
         regexp: '$'
         replace: ' |'
 
 # Format Markdown #
     - name: Format Markdown File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_IP_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_IP_facts.md"
         regexp: '\[|\]|"'
         replace: ''          
 
 # Add Header Rows to Markdown #
     - name: Header Row
       lineinfile:
-        path: /root/inv-fact/{{ inventory_hostname }}_IP_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_IP_facts.md"
         insertbefore: BOF
         line: "{{ item.property }}"
       with_items:
@@ -219,7 +221,7 @@
 
 # Create Mind Map # 
     - name: create Distribution IP Address Mind Map 
-      shell: "npx markmap-cli /root/inv-fact/{{ inventory_hostname }}_IP_facts.md"
+      shell: "npx markmap-cli {{ path_dir }}/{{ inventory_hostname }}_IP_facts.md"
       register: markmap
 
 ## Interface Facts Section ##
@@ -227,69 +229,69 @@
 # Remove file #
     - name: Remove file (delete file)
       file:
-        path: /root/inv-fact/{{ inventory_hostname }}_Interface_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Interface_facts.csv"
         state: absent
 
 # Create Interface CSV file with results #
     - name: Data Row
       lineinfile:
-        path: /root/inv-fact/{{ inventory_hostname }}_Interface_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Interface_facts.csv"
         line: "{{ item.key }},{{ item.value.description }},{{ item.value.operstatus }},{{ item.value.lineprotocol }},{% if item.value.ipv4 %} {{ item.value.ipv4 }} {% else %} NA,NA {% endif %},{{ item.value.bandwidth }},{{ item.value.duplex }},{{ item.value.macaddress }},{{ item.value.type }},{{ item.value.mediatype }},{{ item.value.mtu }}"
         create: yes
       loop: "{{ ansible_facts.net_interfaces | dict2items }}" 
 
-# Format CSV #
+# CSV
     - name: Format CSV File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Interface_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Interface_facts.csv"
         regexp: '\[|\]|"'
         replace: ''      
 
-# Format CSV #
+# CSV
     - name: Format CSV File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Interface_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Interface_facts.csv"
         regexp: "'"
         replace: ''
 
-# Format CSV #
+# CSV
     - name: Format CSV File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Interface_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Interface_facts.csv"
         regexp: "{subnet: "
         replace: ''
 
-# Format CSV #
+# CSV
     - name: Format CSV File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Interface_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Interface_facts.csv"
         regexp: "address: "
         replace: ''
 
-# Format CSV #
+# CSV
     - name: Format CSV File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Interface_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Interface_facts.csv"
         regexp: "}"
         replace: ''
 
 # Add Header Row to CSV #
     - name: Header Row
       lineinfile:
-        path: /root/inv-fact/{{ inventory_hostname }}_Interface_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Interface_facts.csv"
         insertbefore: BOF
         line: Interface,Description,Administrative Status,Line Protocol,Subnet Mask,IP Address,Bandwidth,Duplex,MAC Address,Type,Media Type,MTU
 
 # Remove file #
     - name: Remove file (delete file)
       file:
-        path: /root/inv-fact/{{ inventory_hostname }}_Interface_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Interface_facts.md"
         state: absent
 
 # Create Interface Markdown file with results #
     - name: Data Row
       lineinfile:
-        path: /root/inv-fact/{{ inventory_hostname }}_Interface_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Interface_facts.md"
         line: "| {{ item.key }} | {{ item.value.description }} | {{ item.value.operstatus }} | {{ item.value.lineprotocol }} | {% if item.value.ipv4 %} {{ item.value.ipv4 }} {% else %} NA | NA {% endif %} | {{ item.value.bandwidth }} | {{ item.value.duplex }} | {{ item.value.macaddress }} | {{ item.value.type }} | {{ item.value.mediatype }} | {{ item.value.mtu }}"
         create: yes
       loop: "{{ ansible_facts.net_interfaces | dict2items }}" 
@@ -297,63 +299,63 @@
 # Format Markdown #
     - name: Format Markdown File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Interface_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Interface_facts.md"
         regexp: '\[|\]|"'
         replace: ''      
       
 # Format Markdown #
     - name: Format Markdown File New Lines
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Interface_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Interface_facts.md"
         regexp: '],'
         replace: ']\n'
 
 # Format Markdown #
     - name: Format Markdown File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Interface_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Interface_facts.md"
         regexp: '\[|\]|"'
         replace: ''      
 
 # Format Markdown #
     - name: Format Markdown File Commas to Pipes
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Interface_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Interface_facts.md"
         regexp: ','
         replace: ' | '
 
 # Format Markdown #
     - name: Format Markdown File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Interface_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Interface_facts.md"
         regexp: "'"
         replace: ''
 
 # Format Markdown #
     - name: Format Markdown File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Interface_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Interface_facts.md"
         regexp: "{subnet: "
         replace: ''
 
 # Format Markdown #
     - name: Format Markdown File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Interface_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Interface_facts.md"
         regexp: "address: "
         replace: ''
 
 # Format Markdown #
     - name: Format Markdown File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Interface_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Interface_facts.md"
         regexp: "}"
         replace: ''
 
 # Add Header Rows to Markdown #
     - name: Header Row
       lineinfile:
-        path: /root/inv-fact/{{ inventory_hostname }}_Interface_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Interface_facts.md"
         insertbefore: BOF
         line: "{{ item.property }}"
       with_items:
@@ -363,76 +365,76 @@
 
 # Create Mind Map # 
     - name: create Distribution Interface Mind Map 
-      shell: "npx markmap-cli /root/inv-fact/{{ inventory_hostname }}_Interface_facts.md"
+      shell: "npx markmap-cli {{ path_dir }}/{{ inventory_hostname }}_Interface_facts.md"
       register: markmap
 
 # Neighbor Facts #
 # Remove file #
     - name: Remove file (delete file)
       file:
-        path: /root/inv-fact/{{ inventory_hostname }}_Neighbor_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Neighbor_facts.csv"
         state: absent
 
 # Create Interface CSV file with results #
     - name: Data Row
       lineinfile:
-        path: /root/inv-fact/{{ inventory_hostname }}_Neighbor_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Neighbor_facts.csv"
         line: "{{ item.key }},{{ item.value }}"
         create: yes
       loop: "{{ ansible_facts.net_neighbors | dict2items }}" 
 
-# Format CSV #
+# CSV
     - name: Format CSV File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Neighbor_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Neighbor_facts.csv"
         regexp: '\[|\]|"'
         replace: ''      
 
-# Format CSV #
+# CSV
     - name: Format CSV File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Neighbor_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Neighbor_facts.csv"
         regexp: "'"
         replace: ''
 
-# Format CSV #
+# CSV
     - name: Format CSV File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Neighbor_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Neighbor_facts.csv"
         regexp: "{host:"
         replace: ''
 
-# Format CSV #
+# CSV
     - name: Format CSV File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Neighbor_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Neighbor_facts.csv"
         regexp: "port:"
         replace: ''
 
-# Format CSV #
+# CSV
     - name: Format CSV File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Neighbor_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Neighbor_facts.csv"
         regexp: "}"
         replace: ''
 
 # Add Header Row to CSV #
     - name: Header Row
       lineinfile:
-        path: /root/inv-fact/{{ inventory_hostname }}_Neighbor_facts.csv
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Neighbor_facts.csv"
         insertbefore: BOF
         line: Interface,Neighbor,Port
 
 # Remove file #
     - name: Remove file (delete file)
       file:
-        path: /root/inv-fact/{{ inventory_hostname }}_Neighbor_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Neighbor_facts.md"
         state: absent
 
 # Create Interface Markdown file with results #
     - name: Data Row
       lineinfile:
-        path: /root/inv-fact/{{ inventory_hostname }}_Neighbor_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Neighbor_facts.md"
         line: "| {{ item.key }} | {{ item.value }} |"
         create: yes
       loop: "{{ ansible_facts.net_neighbors | dict2items }}" 
@@ -440,63 +442,63 @@
 # Format Markdown #
     - name: Format Markdown File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Neighbor_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Neighbor_facts.md"
         regexp: '\[|\]|"'
         replace: ''      
       
 # Format Markdown #
     - name: Format Markdown File New Lines
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Neighbor_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Neighbor_facts.md"
         regexp: '],'
         replace: ']\n'
 
 # Format Markdown #
     - name: Format Markdown File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Neighbor_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Neighbor_facts.md"
         regexp: '\[|\]|"'
         replace: ''      
 
 # Format Markdown #
     - name: Format Markdown File Commas to Pipes
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Neighbor_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Neighbor_facts.md"
         regexp: ','
         replace: ' | '
 
 # Format Markdown #
     - name: Format Markdown File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Neighbor_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Neighbor_facts.md"
         regexp: "'"
         replace: ''
 
 # Format Markdown #
     - name: Format Markdown File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Neighbor_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Neighbor_facts.md"
         regexp: "{host:"
         replace: ''
 
 # Format Markdown #
     - name: Format Markdown File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Neighbor_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Neighbor_facts.md"
         regexp: "port:"
         replace: ''
 
 # Format Markdown #
     - name: Format Markdown File Clean Up
       replace:
-        path: /root/inv-fact/{{ inventory_hostname }}_Neighbor_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Neighbor_facts.md"
         regexp: "}"
         replace: ''
 
 # Add Header Rows to Markdown #
     - name: Header Row
       lineinfile:
-        path: /root/inv-fact/{{ inventory_hostname }}_Neighbor_facts.md
+        path: "{{ path_dir }}/{{ inventory_hostname }}_Neighbor_facts.md"
         insertbefore: BOF
         line: "{{ item.property }}"
       with_items:
@@ -506,6 +508,6 @@
 
 # Create Mind Map # 
     - name: create Distribution IP Address Mind Map 
-      shell: "npx markmap-cli /root/inv-fact/{{ inventory_hostname }}_Neighbor_facts.md"
+      shell: "npx markmap-cli {{ path_dir }}/{{ inventory_hostname }}_Neighbor_facts.md"
       register: markmap              
 
