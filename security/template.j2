@@ -1,0 +1,12 @@
+!
+{% for Interface in SwInterfaces -%}
+interface {{ Interface['IntName'] }}
+  no shutdown
+  {% if Interface['IntTrunk'] -%}
+  desc test21
+  {% else -%}
+  description access
+  {% endif -%}
+!
+{% endfor -%}
+!

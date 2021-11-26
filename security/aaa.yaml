@@ -24,6 +24,8 @@
           - "aaa accounting system default start-stop group radius"
           - "aaa session-id common"
           - "ip http authentication aaa"
+      tags:
+        - aaa    
 
     - name: RADIUS COA
       ios_config:
@@ -31,6 +33,8 @@
           - "client 172.20.0.10"
           - "server-key {{ secret }}"
         parents: aaa server radius dynamic-author
+      tags:
+        - aaa
 
     - name: RADIUS
       ios_config:
@@ -38,7 +42,8 @@
           - "address ipv4 172.20.0.10 auth-port 1812 acct-port 1813"
           - "key {{ secret }}"
         parents: radius server ise
-
+      tags:
+        - aaa
     - name: TACACS+
       ios_config:
         lines:
@@ -46,10 +51,8 @@
           - "key {{ secret }}"
         parents: tacacs server ise
       tags:
-        - test
-    - name: Write Memory
-      ios_config: 
+        - aaa
+    - name: AAA Port Configuration
+      ios_config:
         lines:
-          - 'do write'
-      tags:
-        - test
+          - 
