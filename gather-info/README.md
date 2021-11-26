@@ -1,1 +1,2 @@
-# ansible for network
+# Gather Information
+This playBook gather information about IOS, IP Address, Interfaces, Neighbores in json, yaml, md, html, csv, ...
