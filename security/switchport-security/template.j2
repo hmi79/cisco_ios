@@ -4,7 +4,9 @@ interface {{ Interface['IntName'] }}
   {% if Interface['IntTrunk'] -%}
    ip dhcp snooping trust
   {% else -%}
+  switchport host
    ip verify source
+   spanning-tree bpdufilter enable
    switchport port-security
    switchport port-security mac-address sticky
    switchport port-security maximum 2

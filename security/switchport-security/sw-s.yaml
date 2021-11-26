@@ -11,7 +11,7 @@
         lines:
           - "ip dhcp snooping vlan 1-4094"
           - "ip dhcp snooping"
-    
+          
     - name: Prepare jinja2 Data
       shell: "hostname={{ path_dir }}/{{ inventory_hostname }}.data.yaml.0 hostname1={{ path_dir }}/{{ inventory_hostname }}.data.yaml.1 hostname2={{ path_dir }}/{{ inventory_hostname }}.data.yaml bash {{ path_dir }}/b2.sh"
 
@@ -30,7 +30,7 @@
   
   tasks:
     - include_vars: "{{ path_dir }}/{{ inventory_hostname }}.data.yaml"
-    - name: AAA Port Configuration
+    - name: Ports Configuration
       ios_config:
         src: template.j2
 
