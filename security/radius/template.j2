@@ -1,11 +1,13 @@
 !
 {% for Interface in SwInterfaces -%}
 interface {{ Interface['IntName'] }}
-  no shutdown
   {% if Interface['IntTrunk'] -%}
-  desc test21
   {% else -%}
-  description access
+   authentication host-mode multi-auth
+   authentication order mab
+   authentication port-control auto
+   authentication timer reauthenticate server
+   mab
   {% endif -%}
 !
 {% endfor -%}

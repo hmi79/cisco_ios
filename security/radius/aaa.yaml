@@ -1,0 +1,56 @@
+---
+- name: AAA Config
+  hosts: switch
+  gather_facts: false
+
+  vars:
+    secret: "SECRET"
+  pre_tasks:
+    - name: AAA
+      ios_config:
+        lines:
+          - "aaa new-model"
+          - "aaa authentication dot1x default group radius"
+          - "aaa authorization network default group radius"
+          - "aaa accounting update newinfo"
+          - "aaa accounting dot1x default start-stop group radius"
+          - "aaa accounting system default start-stop group radius"
+          - "aaa session-id common"
+    - name: RADIUS COA
+      ios_config:
+        lines:
+          - "client 172.20.10.10"
+          - "server-key {{ secret }}"
+        parents: aaa server radius dynamic-author
+
+    - name: RADIUS
+      ios_config:
+        lines:
+          - "address ipv4 172.20.10.10 auth-port 1812 acct-port 1813"
+          - "key {{ secret }}"
+        parents: radius server ise
+
+    - name: Prepare jinja2 Data
+      shell: "hostname={{ inventory_hostname }}.data.yaml.0 hostname1={{ inventory_hostname }}.data.yaml.1 hostname2={{ inventory_hostname }}.data.yaml bash b2.sh"
+
+    - name: run show running-config
+      ios_command:
+        commands: show running-config | sec interface
+      register: config
+
+    - name: copy file
+      copy:
+        content: "{{ config.stdout[0] }}"
+        dest: "{{ inventory_hostname }}.data.yaml.0"
+
+    - name: Create jinja2 Data
+      shell: "hostname={{ inventory_hostname }}.data.yaml.0 hostname1={{ inventory_hostname }}.data.yaml.1 hostname2={{ inventory_hostname }}.data.yaml bash b1.sh"
+  
+  tasks:
+    - include_vars: "{{ inventory_hostname }}.data.yaml"
+    - name: AAA Port Configuration
+      ios_config:
+        src: template.j2
+
+    - name: Delete Tmep jinja2 Data
+      shell: "hostname={{ inventory_hostname }}.data.yaml.0 hostname1={{ inventory_hostname }}.data.yaml.1 hostname2={{ inventory_hostname }}.data.yaml bash b3.sh"
