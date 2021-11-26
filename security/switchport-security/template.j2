@@ -1,0 +1,15 @@
+!
+{% for Interface in SwInterfaces -%}
+interface {{ Interface['IntName'] }}
+  {% if Interface['IntTrunk'] -%}
+   ip dhcp snooping trust
+  {% else -%}
+   ip verify source
+   switchport port-security
+   switchport port-security mac-address sticky
+   switchport port-security maximum 2
+   switchport port-security violation shutdown
+  {% endif -%}
+!
+{% endfor -%}
+!
