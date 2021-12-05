@@ -1,0 +1,40 @@
+---
+- name: Zabbix Host Add
+  hosts: edge
+  vars_prompt:
+    - name: password
+      prompt: "Enter Zabbix Password"
+  tasks:
+    - name: Find IPv4
+      shell: cat /etc/hosts | grep "{{ inventory_hostname }}" | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'
+      register: x
+    - name: Create a new host or update an existing host's info
+      local_action:
+        module: community.zabbix.zabbix_host
+        server_url: https://zabbix.example.local/zabbix
+        login_user: Admin
+        login_password: "{{ password }}"
+        host_name: "{{ inventory_hostname }}"
+        visible_name: ""
+        description: ""
+        host_groups:
+          - edge
+        link_templates:
+          - Template Net Cisco IOS SNMP
+        status: enabled
+        state: present
+        interfaces:
+        - type: 2
+          main: 1
+          useip: 1
+          ip: "{{ (x.stdout_lines) | replace(\"'\",'') | replace(']','') | replace('[','') }}"
+          dns: "{{ inventory_hostname }}"
+          port: 161
+          details:
+            version: 2
+            bulk: 1
+            community: '{$SNMP_COMMUNITY}'
+        proxy: ""
+        macros:
+          - macro: '{$SNMP_COMMUNITY}'
+            value: 'your_community'

@@ -1,0 +1,33 @@
+---
+# Ansible Playbook to upgrade Cisco IOS. Created by Prashant Sahu (Network Galaxy) http://www.networkgalaxy.org
+
+
+- name: Post Upgrade Cisco IOS
+  hosts: switch
+  connection: network_cli
+  vars:
+    upgrade_ios_version: 17.03.04b
+  
+  tasks:
+    - name: Comparing Installed and Expected IOS version
+      debug:
+        msg:
+        -  "{{ ansible_net_version}}"
+        -  "{{ upgrade_ios_version }}"
+    - name: End the play for the host if device os version is NOT up to date
+      meta: end_host
+      when: ansible_net_version != upgrade_ios_version
+
+    - name: install commit
+      ios_command:
+        commands: 
+          - command: "install commit"
+    - name: install remove inactive
+      ios_command:
+        commands: 
+          - command: "install remove inactive"          
+            prompt: "Do you want to remove the above files?"
+            answer: "y"
+      vars:
+        ansible_command_timeout: 600
+

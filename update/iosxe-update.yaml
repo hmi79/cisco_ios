@@ -1,0 +1,61 @@
+---
+# Ansible Playbook to upgrade Cisco IOS. Created by Prashant Sahu (Network Galaxy) http://www.networkgalaxy.org
+
+
+- name: Upgrade Cisco IOS
+  hosts: switch
+  connection: network_cli
+  vars:
+    upgrade_ios_version: 17.03.04b
+    upgrade_ios_image: cat9k_lite_iosxe.17.03.04b.SPA.bin
+    ftp_server: 172.20.0.10
+
+  tasks:
+    - name: Checking current IOS version
+      ios_facts:
+
+    - name: Comparing Installed and Expected IOS version
+      debug:
+        msg:
+        -  "Current version is {{ ansible_net_version}}"
+        -  "Upgrade image is {{ upgrade_ios_version }}"
+
+
+    - name: Deciding whether the IOS will be upgraded or not
+      debug:
+        msg: "{% if ansible_net_version == upgrade_ios_version or ansible_net_model != 'C9200L-24P-4X' %} Upgrade would be skipped for this host {% else %} This host will be upgraded {% endif %}"
+      tags:
+        - test
+
+    - name: End the play for the host if device os version is up to date
+      meta: end_host
+      when: ansible_net_version == upgrade_ios_version or ansible_net_model != "C9200L-24P-4X"
+      tags:
+        - test
+
+    - name: Copying IOS image to bootflash of device. This may take time.....
+      ios_command:
+        commands: 
+          -  command: "copy ftp://{{ftp_server}}/{{ upgrade_ios_image }} flash:{{ upgrade_ios_image }}"
+             prompt: 'Destination filename [{{ upgrade_ios_image}}]?'
+             answer: "\r"
+      vars:
+        ansible_command_timeout: 900
+    - name: write memory
+      ios_command:
+        commands:
+          - command: "write"
+    - name: add installation
+      ios_command:
+        commands:
+          - command: "install add file flash://{{ upgrade_ios_image }}"
+      vars:
+        ansible_command_timeout: 900
+    - name: install activate
+      ios_command:
+        commands:
+          - command: "install activate"
+            prompt: "Do you want to proceed?"
+            answer: "y"
+      vars:
+        ansible_command_timeout: 1000
